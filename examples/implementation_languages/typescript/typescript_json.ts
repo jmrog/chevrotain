@@ -1,12 +1,4 @@
-//
-import {
-    createToken,
-    Lexer,
-    Parser,
-    IToken,
-    ILexingError,
-    IRecognitionException
-} from "chevrotain"
+import { createToken, Lexer, Parser } from "chevrotain"
 
 const True = createToken({ name: "True", pattern: /true/ })
 const False = createToken({ name: "False", pattern: /false/ })
@@ -109,6 +101,7 @@ class JsonParserTypeScript extends Parser {
 
 // reuse the same parser instance.
 const parser = new JsonParserTypeScript()
+parser.getGAstProductions()
 
 export function parseJson(text) {
     const lexResult = JsonLexer.tokenize(text)
@@ -121,8 +114,6 @@ export function parseJson(text) {
     // let value = parser.json_OopsTypo()
 
     return {
-        // This is a pure grammar, the value will be undefined until we add embedded actions
-        // or enable automatic CST creation.
         cst: cst,
         lexErrors: lexResult.errors,
         parseErrors: parser.errors

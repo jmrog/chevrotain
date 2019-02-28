@@ -34,3 +34,11 @@ export function generateParserModule(options: {
 }): string {
     return genUmdModule({ name: options.name, rules: options.rules })
 }
+
+export function generateCstSignatures(options: {
+    name: string
+    rules: Rule[]
+    visitorsInterfaces?: boolean
+}): string {
+    return genCstSignatures(options)
+}
