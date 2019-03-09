@@ -1,5 +1,6 @@
 import { Parser, Rule, IParserConfig, TokenVocabulary } from "../../api"
 import { genUmdModule, genWrapperFunction } from "./generate"
+import { genCstSignatures } from "./generate_dts"
 
 export function generateParserFactory(options: {
     name: string

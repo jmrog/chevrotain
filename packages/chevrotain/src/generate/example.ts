@@ -1,72 +1,21 @@
-import { Rule } from "../../api"
-import { defaults } from "../utils/utils"
-
-export function genCstSignatures(options: {
-    name: string
-    rules: Rule[]
-    visitorsInterfaces?: boolean
-}): string {
-    const actualOptions = defaults(options, { visitorsInterfaces: true })
-
-    return ""
-}
-
 // TODO: The following signatures need to be generated
 //       auto-magically.
-export abstract class TomlCstVisitor<IN, OUT> implements ICstVisitor<IN, OUT> {
-    // No need to implement these two methods
-    // Generic Visit method implemented by the Chevrotain Library
-    visit(cstNode: CstNode | CstNode[], param?: IN): OUT
-    validateVisitor(): void
+import { CstNode, ICstVisitor, IToken } from "chevrotain"
 
+export interface TomlCstVisitor<IN, OUT> extends ICstVisitor<IN, OUT> {
     toml(ctx: TomlCtx, param?: IN): OUT
     expression(ctx: ExpressionCtx, param?: IN): OUT
-    keyval(ctx: KeyvalCtx, param?: IN): OUT
-    key(ctx: KeyCtx, param?: IN): OUT
-    val(ctx: ValCtx, param?: IN): OUT
-    array(ctx: ArrayCtx, param?: IN): OUT
-    arrayValues(ctx: ArrayValuesCtx, param?: IN): OUT
-    inlineTable(ctx: InlineTableCtx, param?: IN): OUT
-    inlineTableKeyVals(ctx: InlineTableKeyValsCtx, param?: IN): OUT
-    table(ctx: TableCtx, param?: IN): OUT
-    stdTable(ctx: StdTableCtx, param?: IN): OUT
-    arrayTable(ctx: ArrayTableCtx, param?: IN): OUT
-    nl(ctx: NlCtx, param?: IN): OUT
-    commentNewline(ctx: CommentNewlineCtx, param?: IN): OUT
 }
 
 interface TomlCstVisitorConstructor<IN, OUT> {
     new (): TomlCstVisitor<IN, OUT>
 }
 
-export abstract class TomlCstVisitorWithDefaults<IN, OUT>
-    implements ICstVisitor<IN, OUT> {
-    // No need to implement these two methods
-    // Generic Visit method implemented by the Chevrotain Library
-    visit(cstNode: CstNode | CstNode[], param?: IN): OUT
-    validateVisitor(): void
-
-    toml(ctx: TomlCtx, param?: IN): OUT
-    expression(ctx: ExpressionCtx, param?: IN): OUT
-    keyval(ctx: KeyvalCtx, param?: IN): OUT
-    key(ctx: KeyCtx, param?: IN): OUT
-    val(ctx: ValCtx, param?: IN): OUT
-    array(ctx: ArrayCtx, param?: IN): OUT
-    arrayValues(ctx: ArrayValuesCtx, param?: IN): OUT
-    inlineTable(ctx: InlineTableCtx, param?: IN): OUT
-    inlineTableKeyVals(ctx: InlineTableKeyValsCtx, param?: IN): OUT
-    table(ctx: TableCtx, param?: IN): OUT
-    stdTable(ctx: StdTableCtx, param?: IN): OUT
-    arrayTable(ctx: ArrayTableCtx, param?: IN): OUT
-    nl(ctx: NlCtx, param?: IN): OUT
-    commentNewline(ctx: CommentNewlineCtx, param?: IN): OUT
-}
-
 interface TomlCstVisitorWithDefaultsConstructor<IN, OUT> {
     new (): TomlCstVisitorWithDefaults<IN, OUT>
 }
-
-export interface TomlCstNode extends CstNode {
+//www.ebay.com/sch/i.html?_odkw=msi+980ti&_sop=15&_sadis=15&_dmd=1&LH_Complete=1&_osacat=0&_ipg=200&_from=R40&_trksid=m570.l1313&_nkw=msi+980ti+gaming&_sacat=0b34vecd
+https: export interface TomlCstNode extends CstNode {
     name: "toml"
     children: TomlCtx
 }
