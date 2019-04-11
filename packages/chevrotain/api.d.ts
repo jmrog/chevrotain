@@ -1992,6 +1992,10 @@ export interface IProductionWithOccurrence extends IProduction {
     idx: number
 }
 
+export interface IProductionWithDefinition extends IProduction {
+    definition: IProduction[]
+}
+
 /**
  * A very basic implementation of a Visitor Pattern
  * For the Grammar AST structure.
@@ -2045,7 +2049,8 @@ export declare class Rule {
 /**
  * The Grammar AST class representing a top level {@link Parser.SUBRULE} call.
  */
-export declare class NonTerminal implements IProductionWithOccurrence {
+export declare class NonTerminal
+    implements IProductionWithOccurrence, IProductionWithDefinition {
     nonTerminalName: string
     referencedRule: Rule
     idx: number
@@ -2063,7 +2068,8 @@ export declare class NonTerminal implements IProductionWithOccurrence {
  * This is normally only used in {@link Alternation} to distinguish
  * between the different alternatives.
  */
-export declare class Flat implements IOptionallyNamedProduction {
+export declare class Flat
+    implements IOptionallyNamedProduction, IProductionWithDefinition {
     name: string
     definition: IProduction[]
 
@@ -2076,7 +2082,10 @@ export declare class Flat implements IOptionallyNamedProduction {
  * The Grammar AST class representing a {@link Parser.OPTION} call.
  */
 export declare class Option
-    implements IProductionWithOccurrence, IOptionallyNamedProduction {
+    implements
+        IProductionWithOccurrence,
+        IOptionallyNamedProduction,
+        IProductionWithDefinition {
     idx: number
     name?: string
     definition: IProduction[]
@@ -2094,7 +2103,10 @@ export declare class Option
  * The Grammar AST class representing a {@link Parser.AT_LEAST_ONE} call.
  */
 export declare class RepetitionMandatory
-    implements IProductionWithOccurrence, IOptionallyNamedProduction {
+    implements
+        IProductionWithOccurrence,
+        IOptionallyNamedProduction,
+        IProductionWithDefinition {
     name: string
     idx: number
     definition: IProduction[]
@@ -2112,7 +2124,10 @@ export declare class RepetitionMandatory
  * The Grammar AST class representing a {@link Parser.AT_LEAST_ONE_SEP} call.
  */
 export declare class RepetitionMandatoryWithSeparator
-    implements IProductionWithOccurrence, IOptionallyNamedProduction {
+    implements
+        IProductionWithOccurrence,
+        IOptionallyNamedProduction,
+        IProductionWithDefinition {
     separator: TokenType
     idx: number
     name: string
@@ -2132,7 +2147,10 @@ export declare class RepetitionMandatoryWithSeparator
  * The Grammar AST class representing a {@link Parser.MANY} call.
  */
 export declare class Repetition
-    implements IProductionWithOccurrence, IOptionallyNamedProduction {
+    implements
+        IProductionWithOccurrence,
+        IOptionallyNamedProduction,
+        IProductionWithDefinition {
     separator: TokenType
     idx: number
     name: string
@@ -2151,7 +2169,10 @@ export declare class Repetition
  * The Grammar AST class representing a {@link Parser.MANY_SEP} call.
  */
 export declare class RepetitionWithSeparator
-    implements IProductionWithOccurrence, IOptionallyNamedProduction {
+    implements
+        IProductionWithOccurrence,
+        IOptionallyNamedProduction,
+        IProductionWithDefinition {
     separator: TokenType
     idx: number
     name: string
@@ -2171,7 +2192,10 @@ export declare class RepetitionWithSeparator
  * The Grammar AST class representing a {@link Parser.OR} call.
  */
 export declare class Alternation
-    implements IProductionWithOccurrence, IOptionallyNamedProduction {
+    implements
+        IProductionWithOccurrence,
+        IOptionallyNamedProduction,
+        IProductionWithDefinition {
     idx: number
     name: string
     definition: IProduction[]

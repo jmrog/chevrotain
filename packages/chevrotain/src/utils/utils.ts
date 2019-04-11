@@ -90,7 +90,7 @@ export function forEach(collection: any, iteratorCallback: Function): void {
     }
 }
 
-export function isString(item: any): boolean {
+export function isString(item: any): item is string {
     return typeof item === "string"
 }
 

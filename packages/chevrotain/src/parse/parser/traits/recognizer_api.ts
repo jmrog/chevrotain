@@ -22,6 +22,7 @@ import { validateRuleIsOverridden } from "../../grammar/checks"
 import { MixedInParser } from "./parser_traits"
 import { Rule, serializeGrammar } from "../../grammar/gast/gast_public"
 import { HashTable } from "../../../lang/lang_extensions"
+import { EbnfWalker } from "../../grammar/ebnf/ebnf_walker"
 
 /**
  * This trait is responsible for implementing the offical API
@@ -692,5 +693,12 @@ export class RecognizerApi {
         this: MixedInParser
     ): ISerializedGast[] {
         return serializeGrammar(this.gastProductionsCache.values())
+    }
+
+    public getEbnfProductions(this: MixedInParser) {
+        const ebnfCreatingVisitor = new EbnfWalker(
+            this.gastProductionsCache.values()
+        )
+        return ebnfCreatingVisitor.walk().toString()
     }
 }
