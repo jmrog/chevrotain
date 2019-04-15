@@ -12,12 +12,24 @@ import {
 } from "../gast/gast_public"
 import { forEach, keys, map, isString } from "../../../utils/utils"
 import { IProduction, IProductionWithDefinition } from "../../../../api"
+import { tokenLabel } from "../../../scan/tokens_public"
 
-function append(newText: string, existingText: string) {
-    const lastExistingChar = existingText.slice(-1)
-    const addSpace =
-        existingText.length > 0 &&
-        !(lastExistingChar === "(" || lastExistingChar === ")")
+export interface EbnfWalkerOptions {
+    stripTopLevelParens?: boolean
+    useLabels?: boolean
+    ruleLineSeparator?: string
+}
+
+const parenOrWhitespaceMatcher = /[()\s]/
+const EMPTY_ALT_LABEL = "EMPTY_ALT"
+const CUSTOM_PATTERN_LABEL = "CUSTOM_TOKEN_PATTERN"
+const MISSING_PATTERN_LABEL = "MISSING_PATTERN"
+
+function append(
+    newText: string,
+    existingText: string,
+    addSpace = existingText.length > 0
+) {
     return `${existingText}${addSpace ? " " : ""}${newText}`
 }
 
@@ -32,24 +44,93 @@ function appendWrapperChar(
     return append(char, existingText)
 }
 
+function strip(line: string) {
+    const trimmed = line.trim()
+    const lineLen = line.length
+    let numStartParens = 0
+    let numEndParens = 0
+    let startParenIndices = []
+    let endParenIndices = []
+
+    for (
+        let i = 0;
+        i < lineLen && parenOrWhitespaceMatcher.test(line[i]);
+        i++
+    ) {
+        if (line[i] === "(") {
+            numStartParens++
+            startParenIndices.push(i)
+        }
+    }
+
+    if (numStartParens === 0) {
+        return trimmed
+    }
+
+    for (
+        let i = lineLen - 1;
+        i > startParenIndices[numStartParens - 1] &&
+        parenOrWhitespaceMatcher.test(line[i]);
+        i--
+    ) {
+        if (line[i] === ")") {
+            numEndParens++
+            endParenIndices.push(i)
+        }
+    }
+
+    if (numEndParens === 0) {
+        return trimmed
+    }
+
+    if (numStartParens === numEndParens) {
+        return trimmed
+            .slice(
+                startParenIndices[numStartParens - 1] + 1,
+                endParenIndices[numEndParens - 1]
+            )
+            .trim()
+    } else if (numStartParens > numEndParens) {
+        return trimmed
+            .slice(
+                startParenIndices[numEndParens - 1] + 1,
+                endParenIndices[numEndParens - 1]
+            )
+            .trim()
+    } else {
+        return trimmed
+            .slice(
+                startParenIndices[numStartParens - 1] + 1,
+                endParenIndices[numStartParens - 1]
+            )
+            .trim()
+    }
+}
+
 export class EbnfWalker {
-    private topRules: Rule[] = []
     private ebnf: { [productionName: string]: string } = {}
+    private currentOptions: EbnfWalkerOptions = {}
     private currentRuleName: string
 
-    constructor(topRules: Rule[]) {
-        this.topRules = topRules
-    }
-
     toString() {
-        return map(keys(this.ebnf), key => `${key} ::= ${this.ebnf[key]}`).join(
-            "\n"
-        )
+        const {
+            stripTopLevelParens,
+            ruleLineSeparator = "\n"
+        } = this.currentOptions
+        return map(
+            keys(this.ebnf),
+            key =>
+                `${key} ::= ${
+                    stripTopLevelParens ? strip(this.ebnf[key]) : this.ebnf[key]
+                }`
+        ).join(ruleLineSeparator)
     }
 
-    walk() {
-        forEach(this.topRules, rule => (this.ebnf[rule.name] = ""))
-        forEach(this.topRules, rule => this.walkRule(rule))
+    walk(topRules: Rule[] = [], options: EbnfWalkerOptions = {}) {
+        this.ebnf = {}
+        this.currentOptions = options
+        forEach(topRules, rule => (this.ebnf[rule.name] = ""))
+        forEach(topRules, rule => this.walkRule(rule))
         return this
     }
 
@@ -108,11 +189,24 @@ export class EbnfWalker {
 
     walkTerminal(node: Terminal) {
         const { terminalType } = node
-        this.ebnf[terminalType.tokenName] = isString(terminalType.PATTERN)
-            ? `'${terminalType.PATTERN}'`
-            : terminalType.PATTERN.source
+        let label = this.currentOptions.useLabels
+            ? tokenLabel(terminalType)
+            : terminalType.tokenName
+        let ebnfText
+
+        if (typeof terminalType.PATTERN === "function") {
+            ebnfText = CUSTOM_PATTERN_LABEL
+        } else if (typeof terminalType.PATTERN === "undefined") {
+            ebnfText = MISSING_PATTERN_LABEL
+        } else {
+            ebnfText = isString(terminalType.PATTERN)
+                ? `'${terminalType.PATTERN}'`
+                : terminalType.PATTERN.toString()
+        }
+
+        this.ebnf[label] = ebnfText
         this.ebnf[this.currentRuleName] = append(
-            terminalType.tokenName,
+            label,
             this.ebnf[this.currentRuleName]
         )
     }
@@ -127,7 +221,7 @@ export class EbnfWalker {
     walkFlat(node: Flat) {
         if (node.definition.length === 0) {
             this.ebnf[this.currentRuleName] = append(
-                "EMPTY_ALT",
+                EMPTY_ALT_LABEL,
                 this.ebnf[this.currentRuleName]
             )
             return

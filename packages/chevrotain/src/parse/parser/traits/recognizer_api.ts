@@ -696,9 +696,8 @@ export class RecognizerApi {
     }
 
     public getEbnfProductions(this: MixedInParser) {
-        const ebnfCreatingVisitor = new EbnfWalker(
-            this.gastProductionsCache.values()
-        )
-        return ebnfCreatingVisitor.walk().toString()
+        return new EbnfWalker()
+            .walk(this.gastProductionsCache.values())
+            .toString()
     }
 }
